@@ -9,7 +9,7 @@ WORKDIR /app
 
 COPY --from=build /app/target/*.jar ./app.jar
 
-ENV APP_PORT="8080"
+ENV SERVER_PORT="8080"
 ENV MODEL_HOST="http://localhost:8081"
 
 EXPOSE 8080
