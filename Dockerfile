@@ -1,7 +1,7 @@
 FROM maven:3.9.11-eclipse-temurin-25-noble AS build
 WORKDIR /app
-COPY frontend/pom.xml .
-COPY frontend/src ./src
+COPY pom.xml .
+COPY src ./src
 RUN mvn clean package
 
 FROM eclipse-temurin:25-jdk-ubi10-minimal
