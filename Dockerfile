@@ -3,6 +3,12 @@ ARG GITHUB_TOKEN
 
 FROM maven:3.9.11-eclipse-temurin-25-noble AS build
 WORKDIR /app
+
+ARG GITHUB_USERNAME
+ARG GITHUB_TOKEN
+ENV GITHUB_USERNAME=${GITHUB_USERNAME}
+ENV GITHUB_TOKEN=${GITHUB_TOKEN}
+
 COPY pom.xml .
 COPY src ./src
 COPY settings.xml /root/.m2/settings.xml
@@ -15,8 +21,6 @@ COPY --from=build /app/target/*.jar ./app.jar
 
 ENV APP_PORT="8080"
 ENV MODEL_HOST="http://localhost:8081"
-ENV GITHUB_USERNAME=${GITHUB_USERNAME}
-ENV GITHUB_TOKEN=${GITHUB_TOKEN}
 
 EXPOSE 8080
 ENTRYPOINT [ "java", "-jar", "app.jar" ]

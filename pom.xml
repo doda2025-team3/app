@@ -15,7 +15,7 @@
 
 	<properties>
 		<java.version>25</java.version>
-		<lib.version>1.0.10</lib.version>
+		<lib.version>1.0.11</lib.version>
 	</properties>
 
 	<repositories>
