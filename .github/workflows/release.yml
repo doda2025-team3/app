@@ -32,8 +32,8 @@ jobs:
         distribution: temurin
         java-version: "25"
         server-id: github-lib-version
-        server-username: GITHUB_ACTOR
-        server-token: GITHUB_TOKEN
+        server-username: ${{github.actor}}
+        server-token: ${{ secrets.GH_TOKEN_CAROLYN }}
 
   #  - name: Parse version info from tag
   #    run: |
