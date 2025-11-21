@@ -6,7 +6,7 @@ WORKDIR /app
 COPY pom.xml .
 COPY src ./src
 COPY settings.xml /root/.m2/settings.xml
-RUN mvn -s /root/.ms/settings.xml clean package
+RUN mvn -s /root/.m2/settings.xml clean package
 
 FROM eclipse-temurin:25-jdk-ubi10-minimal
 WORKDIR /app
