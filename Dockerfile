@@ -1,18 +1,13 @@
-ARG GITHUB_USERNAME
-ARG GITHUB_TOKEN
-
 FROM maven:3.9.11-eclipse-temurin-25-noble AS build
 WORKDIR /app
 
-ARG GITHUB_USERNAME
-ARG GITHUB_TOKEN
-ENV GITHUB_USERNAME=${GITHUB_USERNAME}
-ENV GITHUB_TOKEN=${GITHUB_TOKEN}
-
 COPY pom.xml .
 COPY src ./src
-COPY settings.xml /root/.m2/settings.xml
-RUN mvn -s /root/.m2/settings.xml clean package
+COPY settings.xml ./settings.xml
+RUN --mount=type=secret,id=GITHUB_TOKEN \
+    export GITHUB_TOKEN=$(cat /run/secrets/GITHUB_TOKEN) && \
+    export GITHUB_USERNAME=${GITHUB_USERNAME:-${GITHUB_ACTOR:-lynlynnie}} && \
+    mvn -B -s settings.xml clean package -DskipTests
 
 FROM eclipse-temurin:25-jdk-ubi10-minimal
 WORKDIR /app
