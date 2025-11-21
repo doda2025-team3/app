@@ -66,6 +66,9 @@ jobs:
       with:
         context: .
         push: true
+        build-args: |
+          GITHUB_USER=${{ github.actor }}
+          GITHUB_TOKEN=${{ secrets.GH_TOKEN_CAROLYN }}
         tags: |
           ghcr.io/doda2025-team3/app:${{ env.version }}
           ghcr.io/doda2025-team3/app:${{ env.version_major }}.${{ env.version_minor }}.latest
