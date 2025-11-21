@@ -5,8 +5,9 @@ COPY pom.xml .
 COPY src ./src
 COPY settings.xml ./settings.xml
 RUN --mount=type=secret,id=GITHUB_TOKEN \
-    export GITHUB_TOKEN=$(cat /run/secrets/GITHUB_TOKEN) && \
-    export GITHUB_USERNAME=${GITHUB_USERNAME:-${GITHUB_ACTOR:-lynlynnie}} && \
+    GITHUB_TOKEN=$(cat /run/secrets/GITHUB_TOKEN) && \
+    GITHUB_USERNAME=$${GITHUB_ACTOR:-github-user} && \
+    export GITHUB_TOKEN GITHUB_USERNAME \
     mvn -B -s settings.xml clean package -DskipTests
 
 FROM eclipse-temurin:25-jdk-ubi10-minimal
