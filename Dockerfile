@@ -16,7 +16,7 @@ COPY --from=build /app/target/*.jar ./app.jar
 ENV APP_PORT="8080"
 ENV MODEL_HOST="http://localhost:8081"
 ENV GITHUB_USER=$GITHUB_USER
-ENV GITHUB_PASSWORD=$GITHUB_PASSWORD
+ENV GITHUB_TOKEN=$GITHUB_TOKEN
 
 EXPOSE 8080
 ENTRYPOINT [ "java", "-jar", "app.jar" ]
