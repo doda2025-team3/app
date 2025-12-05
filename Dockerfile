@@ -1,8 +1,12 @@
 FROM maven:3.9.11-eclipse-temurin-25-noble AS build
 WORKDIR /app
+ARG GITHUB_USER
+ARG GITHUB_TOKEN
+RUN mkdir -p /root/.m2
+COPY settings.xml /root/.m2/
 COPY pom.xml .
 COPY src ./src
-RUN mvn clean package
+RUN GITHUB_USER=$GITHUB_USER GITHUB_TOKEN=$GITHUB_TOKEN mvn clean package -B
 
 FROM eclipse-temurin:25-jdk-ubi10-minimal
 WORKDIR /app
