@@ -15,10 +15,30 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import frontend.data.Sms;
 import jakarta.servlet.http.HttpServletRequest;
+import io.prometheus.client.Counter;
+import io.prometheus.client.Histogram;
 
 @Controller
 @RequestMapping(path = "/sms")
 public class FrontendController {
+
+    private static final Counter smsPageViews = Counter.build()
+            .name("sms_page_views_total")
+            .help("Total number of times the SMS form page was loaded")
+            .labelNames("device_type")
+            .register();
+
+    private static final Counter smsPredictionsTotal = Counter.build()
+            .name("sms_predictions_total")
+            .help("Total number of SMS predictions triggered via UI")
+            .labelNames("result")
+            .register();
+
+    private static final Histogram smsPredictionLatencySeconds = Histogram.build()
+            .name("sms_prediction_latency_seconds")
+            .help("Latency of SMS prediction calls from the frontend in seconds")
+            .buckets(0.05, 0.1, 0.25, 0.5, 1.0, 2.0, 5.0)
+            .register();
 
     private String modelHost;
 
@@ -52,8 +72,13 @@ public class FrontendController {
     }
 
     @GetMapping("/")
-    public String index(Model m) {
+    public String index(Model m, HttpServletRequest request) {
         m.addAttribute("hostname", modelHost);
+
+        String ua = request.getHeader("User-Agent");
+        String deviceType = classifyDeviceType(ua);
+        smsPageViews.labels(deviceType).inc();
+
         return "sms/index";
     }
 
@@ -61,9 +86,19 @@ public class FrontendController {
     @ResponseBody
     public Sms predict(@RequestBody Sms sms) {
         System.out.printf("Requesting prediction for \"%s\" ...\n", sms.sms);
-        sms.result = getPrediction(sms);
-        System.out.printf("Prediction: %s\n", sms.result);
-        return sms;
+        Histogram.Timer timer = smsPredictionLatencySeconds.startTimer();
+        try {
+            sms.result = getPrediction(sms);
+
+            // count prediction by result label (spam/ham)
+            String resultLabel = sms.result != null ? sms.result.trim() : "unknown";
+            smsPredictionsTotal.labels(resultLabel).inc();
+
+            System.out.printf("Prediction: %s\n", sms.result);
+            return sms;
+        } finally {
+            timer.observeDuration();
+        }
     }
 
     private String getPrediction(Sms sms) {
@@ -75,4 +110,19 @@ public class FrontendController {
             throw new RuntimeException(e);
         }
     }
+
+    private String classifyDeviceType(String userAgent) {
+        if (userAgent == null) {
+            return "unknown";
+        }
+        String ua = userAgent.toLowerCase();
+        if (ua.contains("mobile") || ua.contains("android") || ua.contains("iphone")) {
+            return "mobile";
+        }
+        if (ua.contains("tablet") || ua.contains("ipad")) {
+            return "tablet";
+        }
+        return "desktop";
+    }
+
 }
