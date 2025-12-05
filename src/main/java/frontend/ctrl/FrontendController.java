@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import frontend.data.Sms;
 import jakarta.servlet.http.HttpServletRequest;
+import com.doda2025group3.app.VersionUtil;
 
 @Controller
 @RequestMapping(path = "/sms")
@@ -27,6 +28,12 @@ public class FrontendController {
     public FrontendController(RestTemplateBuilder rest, Environment env) {
         this.rest = rest;
         this.modelHost = env.getProperty("MODEL_HOST");
+        try {
+          VersionUtil util = new VersionUtil();
+          System.out.println("Loaded" + util.getVersion());
+        } catch (Exception e) {
+          e.printStackTrace();
+        }
         assertModelHost();
     }
 
