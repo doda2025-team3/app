@@ -14,19 +14,19 @@
 	<version>0.0.1-SNAPSHOT</version>
 
 	<properties>
-		<java.version>25</java.version>
+		<java.version>17</java.version>
+		<lib.version>1.0.14</lib.version>
 	</properties>
 
-  <repositories>
-    <repository>
-      <id>github-packages</id>
-      <name>Github Packages</name>
-      <url>https://maven.pkg.github.com/doda2025-team3/lib-version</url>
-      <snapshots>
-        <enabled>true</enabled>
-      </snapshots>
-    </repository>
-  </repositories>
+	<repositories>
+		<repository>
+			<id>github-packages</id>
+			<name>Github Packages</name>
+			<url>https://maven.pkg.github.com/doda2025-team3/lib-version</url>
+			<releases><enabled>true</enabled></releases>
+			<snapshots><enabled>true</enabled></snapshots>    
+		</repository>
+	</repositories>
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -36,17 +36,16 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
-
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
 		</dependency>
-    <dependency>
-      <groupId>com.doda2025group3.app</groupId>
-      <artifactId>lib-version</artifactId>
-      <version>1.0.7-F11-20251121021657-6683cee</version>
-    </dependency>
+		<dependency>
+			<groupId>com.doda2025group3.app</groupId>
+			<artifactId>lib-version</artifactId>
+			<version>${lib.version}</version>
+		</dependency>
 		<dependency>
 			<groupId>io.prometheus</groupId>
 			<artifactId>simpleclient</artifactId>
