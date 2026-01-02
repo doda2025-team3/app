@@ -23,16 +23,28 @@ jobs:
         username: ${{ github.actor }}
         password: ${{ secrets.GH_TOKEN_CAROLYN }}
 
-    - name: Parse version info from tag
+    # - name: Parse version info from lib-version
+    #   run: |
+    #     VERSION=${GITHUB_REF:11}
+    #     MAJOR=$(echo "$VERSION" | cut -d . -f 1)
+    #     MINOR=$(echo "$VERSION" | cut -d . -f 2)
+    #     PATCH=$(echo "$VERSION" | cut -d . -f 3)
+    #     echo "version=$VERSION" >> $GITHUB_ENV
+    #     echo "version_major=$MAJOR" >> $GITHUB_ENV
+    #     echo "version_minor=$MINOR" >> $GITHUB_ENV
+    #     echo "version_patch=$PATCH" >> $GITHUB_ENV
+
+    - name: Parse version info from pom.xml
       run: |
-        VERSION=${GITHUB_REF:11}
-        MAJOR=$(echo "$VERSION" | cut -d . -f 1)
-        MINOR=$(echo "$VERSION" | cut -d . -f 2)
-        PATCH=$(echo "$VERSION" | cut -d . -f 3)
-        echo "version=$VERSION" >> $GITHUB_ENV
-        echo "version_major=$MAJOR" >> $GITHUB_ENV
-        echo "version_minor=$MINOR" >> $GITHUB_ENV
-        echo "version_patch=$PATCH" >> $GITHUB_ENV
+        echo "VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
+
+    - name: Extract metadata
+      id: meta
+      uses: docker/metadata-action@v4
+      with:
+        images: ghcr.io/doda2025-team3/app
+        tags: |
+          type=raw, value=${{ env.VERSION }}
 
     - name: Set up QEMU
       uses: docker/setup-qemu-action@v3
@@ -45,12 +57,21 @@ jobs:
       with:
         platforms: linux/amd64,linux/arm64
         context: .
-        push: true
-        tags: |
-          ghcr.io/doda2025-team3/app:${{ env.version }}
-          ghcr.io/doda2025-team3/app:${{ env.version_major }}.${{ env.version_minor }}.latest
-          ghcr.io/doda2025-team3/app:${{ env.version_major }}.latest
-          ghcr.io/doda2025-team3/app:latest
+        push: ${{ github.event_name != 'pull_request' }}
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
+
+    # - name: Build and push image to registry
+    #   uses: docker/build-push-action@v6
+    #   with:
+    #     platforms: linux/amd64,linux/arm64
+    #     context: .
+    #     push: true
+    #     tags: |
+    #       ghcr.io/doda2025-team3/app:${{ env.version }}
+    #       ghcr.io/doda2025-team3/app:${{ env.version_major }}.${{ env.version_minor }}.latest
+    #       ghcr.io/doda2025-team3/app:${{ env.version_major }}.latest
+    #       ghcr.io/doda2025-team3/app:latest
 
    # - name: Build and push image to registry (this is from the in-class assignment)
    #   run: |
