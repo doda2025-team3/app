@@ -24,7 +24,7 @@
 			<name>Github Packages</name>
 			<url>https://maven.pkg.github.com/doda2025-team3/lib-version</url>
 			<releases><enabled>true</enabled></releases>
-			<snapshots><enabled>true</enabled></snapshots>    
+			<snapshots><enabled>false</enabled></snapshots>    
 		</repository>
 	</repositories>
 	<dependencies>
