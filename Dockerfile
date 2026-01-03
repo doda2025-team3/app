@@ -1,18 +1,21 @@
 FROM maven:3.9.11-eclipse-temurin-17 AS build
 WORKDIR /app
 
-ARG GITHUB_USER
-ARG GITHUB_TOKEN
+# ARG GITHUB_USER
+# ARG GITHUB_TOKEN
 
-RUN mkdir -p /root/.m2
-COPY settings.xml /root/.m2/settings.xml
+# RUN mkdir -p /root/.m2
+# COPY settings.xml /root/.m2/settings.xml
 
 COPY pom.xml .
 
-RUN GITHUB_USER=$GITHUB_USER GITHUB_TOKEN=$GITHUB_TOKEN mvn -B -q dependency:go-offline
+# RUN GITHUB_USER=$GITHUB_USER GITHUB_TOKEN=$GITHUB_TOKEN mvn -B -q dependency:go-offline
+
+RUN --mount=type=secret,id=maven_settings,target=/root/.m2/settings.xml mvn -B -q dependency:go-offline
+
 
 COPY src ./src
-RUN GITHUB_USER=$GITHUB_USER GITHUB_TOKEN=$GITHUB_TOKEN mvn clean package -B
+RUN --mount=type=secret,id=maven_settings,target=/root/.m2/settings.xml mvn clean package -B
 
 
 FROM eclipse-temurin:17-jre

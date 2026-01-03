@@ -4,8 +4,8 @@
     <servers>
         <server>
             <id>github-packages</id>
-            <username>${env.GITHUB_USER}</username>
-            <password>${env.GITHUB_TOKEN}</password>
+            <username>${{ github.actor }}</username>
+            <password>${{ secrets.GH_TOKEN_CAROLYN }}</password>
         </server>
     </servers>
 </settings>
