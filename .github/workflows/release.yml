@@ -39,8 +39,8 @@ jobs:
         java-version: "17"
         cache: maven
         server-id: github-packages
-        server-username: GITHUB_ACTOR
-        server-password: GITHUB_TOKEN
+        server-username: ${{ github.actor }}
+        server-password: ${{ secrets.GH_TOKEN_CAROLYN }}
 
     - name: Force Maven to initialize settings
       run: mvn -q -DforceStdout -Dexpression=project.version help:evaluate
