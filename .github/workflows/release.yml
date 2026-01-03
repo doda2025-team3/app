@@ -18,8 +18,8 @@ jobs:
   build:
     runs-on: ubuntu-24.04
     env:
-      GITHUB_TOKEN: ${{ secrets.GH_TOKEN_DANIEL }}
-      GITHUB_ACTOR: daniel2002340
+      GITHUB_TOKEN: ${{ secrets.GH_TOKEN_CAROLYN }}
+      GITHUB_ACTOR: lynlynnie
 
     steps:
     - name: Checkout
