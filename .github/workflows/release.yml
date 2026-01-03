@@ -116,7 +116,8 @@ jobs:
     
     - name: Verify maven-settings.xml exists
       run: |
-        ls -ლა
+        pwd
+        ls -la
         test -f maven-settings.xml
         head -n 3 maven-settings.xml
 
