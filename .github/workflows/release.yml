@@ -49,12 +49,12 @@ jobs:
     - name: Parse version info from pom.xml
       run: |
         echo "VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)"
-        BASE_VERSION=${VERSION%%-*}
+        echo "VERSION=$VERSION" >> $GITHUB_ENV
 
+        BASE_VERSION=${VERSION%%-*}
         MAJOR=$(echo "$BASE_VERSION" | cut -d . -f 1)
         MINOR=$(echo "$BASE_VERSION" | cut -d . -f 2)
         PATCH=$(echo "$BASE_VERSION" | cut -d . -f 3)
-        echo "VERSION=$VERSION" >> $GITHUB_ENV
         echo "VERSION_BASE=$BASE_VERSION" >> $GITHUB_ENV
         echo "VERSION_MAJOR=$MAJOR" >> $GITHUB_ENV
         echo "VERSION_MINOR=$MINOR" >> $GITHUB_ENV
