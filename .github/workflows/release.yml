@@ -19,7 +19,7 @@ jobs:
     runs-on: ubuntu-24.04
     env:
       GITHUB_TOKEN: ${{ secrets.GH_TOKEN_CAROLYN }}
-      GITHUB_ACTOR: lynlynnie
+      GITHUB_ACTOR: ${{ github.actor }}
 
     steps:
     - name: Checkout
