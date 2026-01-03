@@ -41,6 +41,22 @@ jobs:
         server-username: GITHUB_ACTOR
         server-password: GITHUB_TOKEN
 
+    - name: Force Maven to initialize settings
+      run: mvn -q -DforceStdout -Dexpression=project.version help:evaluate
+
+    - name: Debug generated Maven settings.xml
+      run: |
+        echo "=== First 5 lines of ~/.m2/settings.xml ==="
+        sed -n '1,5p' ~/.m2/settings.xml || true
+        echo "=== First 20 bytes (hex) ==="
+        python - <<'PY'
+        import pathlib, binascii
+        p = pathlib.Path.home()/".m2"/"settings.xml"
+        data = p.read_bytes()[:20]
+        print(binascii.hexlify(data).decode())
+        print(data)
+        PY
+
 
     # - name: Parse version info from lib-version
     #   run: |
@@ -96,9 +112,6 @@ jobs:
     - name: Prepare maven settings  
       run: |
         cp ~/.m2/settings.xml maven-settings.xml
-
-    
-
 
     - name: Build and push image to registry
       uses: docker/build-push-action@v6
