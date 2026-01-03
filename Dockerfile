@@ -10,7 +10,7 @@ WORKDIR /app
 COPY pom.xml .
 
 # RUN GITHUB_USER=$GITHUB_USER GITHUB_TOKEN=$GITHUB_TOKEN mvn -B -q dependency:go-offline
-
+RUN mkdir -p /root/.m2
 RUN --mount=type=secret,id=maven_settings,target=/root/.m2/settings.xml mvn -B -q dependency:go-offline
 
 
