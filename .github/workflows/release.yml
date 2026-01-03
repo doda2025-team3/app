@@ -17,6 +17,9 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-24.04
+    env:
+      GITHUB_TOKEN: ${{ secrets.GH_TOKEN_CAROLYN }}
+
     steps:
     - name: Checkout
       uses: actions/checkout@v4
@@ -34,6 +37,10 @@ jobs:
         distribution: temurin
         java-version: "17"
         cache: maven
+        server-id: github-packages
+        server-username: GITHUB_ACTOR
+        server-password: GITHUB_TOKEN
+
 
     # - name: Parse version info from lib-version
     #   run: |
@@ -86,21 +93,11 @@ jobs:
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
 
-    - name: Create Maven settings
+    - name: Prepare maven settings  
       run: |
-        cat > settings-ci.xml <<-EOF
-            <settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
-                      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                      xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 https://maven.apache.org/xsd/settings-1.0.0.xsd">
-              <servers>
-                <server>
-                  <id>github-packages</id>
-                  <username>${{ github.actor }}</username>
-                  <password>${{ secrets.GH_TOKEN_CAROLYN }}</password>
-                </server>
-              </servers>
-            </settings>
-        EOF
+        cp ~/.m2/settings.xml maven-settings.xml
+
+    
 
 
     - name: Build and push image to registry
@@ -113,7 +110,7 @@ jobs:
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
         secrets: |
-          maven_settings=./settings-ci.xml
+          maven_settings=maven-settings.xml
 
     # - name: Build and push image to registry
     #   uses: docker/build-push-action@v6
