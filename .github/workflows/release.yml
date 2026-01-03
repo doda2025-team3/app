@@ -48,7 +48,7 @@ jobs:
 
     - name: Parse version info from pom.xml
       run: |
-        echo "VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)"
+        VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
         echo "VERSION=$VERSION" >> $GITHUB_ENV
 
         BASE_VERSION=${VERSION%%-*}
