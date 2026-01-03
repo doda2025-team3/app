@@ -113,6 +113,13 @@ jobs:
     - name: Prepare maven settings  
       run: |
         cp ~/.m2/settings.xml maven-settings.xml
+    
+    - name: Verify maven-settings.xml exists
+      run: |
+        ls -ლა
+        test -f maven-settings.xml
+        head -n 3 maven-settings.xml
+
 
     - name: Build and push image to registry
       uses: docker/build-push-action@v6
