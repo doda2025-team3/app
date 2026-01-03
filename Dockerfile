@@ -15,7 +15,7 @@ RUN --mount=type=secret,id=maven_settings,target=~/.m2/settings.xml mvn -B -q de
 
 
 COPY src ./src
-RUN --mount=type=secret,id=maven_settings,target=/root/.m2/settings.xml mvn clean package -B
+RUN --mount=type=secret,id=maven_settings,target=~/.m2/settings.xml mvn clean package -B
 
 
 FROM eclipse-temurin:17-jre
