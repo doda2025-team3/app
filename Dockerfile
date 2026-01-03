@@ -11,11 +11,11 @@ COPY pom.xml .
 
 # RUN GITHUB_USER=$GITHUB_USER GITHUB_TOKEN=$GITHUB_TOKEN mvn -B -q dependency:go-offline
 RUN mkdir -p /root/.m2
-RUN --mount=type=secret,id=maven_settings,target=~/.m2/settings.xml mvn -B -q dependency:go-offline
+RUN --mount=type=secret,id=maven_settings,target=/root/.m2/settings.xml,required=true mvn -B -q dependency:go-offline
 
 
 COPY src ./src
-RUN --mount=type=secret,id=maven_settings,target=~/.m2/settings.xml mvn clean package -B
+RUN --mount=type=secret,id=maven_settings,target=/root/.m2/settings.xml,required=true mvn clean package -B
 
 
 FROM eclipse-temurin:17-jre
