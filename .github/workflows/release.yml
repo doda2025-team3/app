@@ -3,7 +3,9 @@ name: Release
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
+      - assignment1_excellent_attempt
     paths: 
       - "pom.xml"
   workflow_dispatch:
