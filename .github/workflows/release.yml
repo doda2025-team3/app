@@ -48,7 +48,17 @@ jobs:
 
     - name: Parse version info from pom.xml
       run: |
-        echo "VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
+        echo "VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)"
+        BASE_VERSION=${VERSION%%-*}
+
+        MAJOR=$(echo "$BASE_VERSION" | cut -d . -f 1)
+        MINOR=$(echo "$BASE_VERSION" | cut -d . -f 2)
+        PATCH=$(echo "$BASE_VERSION" | cut -d . -f 3)
+        echo "VERSION=$VERSION" >> $GITHUB_ENV
+        echo "VERSION_BASE=$BASE_VERSION" >> $GITHUB_ENV
+        echo "VERSION_MAJOR=$MAJOR" >> $GITHUB_ENV
+        echo "VERSION_MINOR=$MINOR" >> $GITHUB_ENV
+        echo "VERSION_PATCH=$PATCH" >> $GITHUB_ENV
 
     - name: Verfy versions match tag and pom.xml
       if: startsWith(github.ref, 'refs/tags/')
@@ -65,6 +75,10 @@ jobs:
         images: ghcr.io/doda2025-team3/app
         tags: |
           type=raw,value=${{ env.VERSION }}
+          type=raw,value=${{ env.VERSION_MAJOR }}.${{ env.VERSION_MINOR }}.latest
+          type=raw,value=${{ env.VERSION_MAJOR }}.latest
+          type=raw,value=latest
+
 
     - name: Set up QEMU
       uses: docker/setup-qemu-action@v3
