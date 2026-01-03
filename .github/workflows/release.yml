@@ -124,7 +124,7 @@ jobs:
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
         secrets: |
-          maven_settings=maven-settings.xml
+          id=maven_settings,src=maven-settings.xml
 
     # - name: Build and push image to registry
     #   uses: docker/build-push-action@v6
