@@ -3,7 +3,12 @@ name: Release
 
 on:
   push:
-    tags: ["v[0-9]+.[0-9]+.[0-9]+"]
+    branches:
+      - main
+      - assignment1_excellent_attempt
+    paths: 
+      - "pom.xml"
+  workflow_dispatch:
 
 permissions:
   contents: read
