@@ -131,7 +131,7 @@ jobs:
         provenance: false
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
-        secrets: |
+        secret-files: |
           id=maven_settings,src=maven-settings.xml
 
     # - name: Build and push image to registry
