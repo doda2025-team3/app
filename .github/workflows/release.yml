@@ -112,14 +112,19 @@ jobs:
 
     - name: Prepare maven settings  
       run: |
-        cp ~/.m2/settings.xml maven-settings.xml
-    
-    - name: Verify maven-settings.xml exists
-      run: |
-        pwd
-        ls -la
-        test -f maven-settings.xml
-        head -n 3 maven-settings.xml
+        cat > maven-settings.xml <<XML
+        <settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 https://maven.apache.org/xsd/settings-1.0.0.xsd">
+          <servers>
+            <server>
+              <id>github-packages</id>
+              <username>${env.GITHUB_ACTOR}</username>
+              <password>${env.GITHUB_TOKEN}</password>
+            </server>
+          </servers>
+        </settings>
+        XML
 
 
     - name: Build and push image to registry
