@@ -9,7 +9,7 @@ on:
     paths: 
       - "pom.xml"
   workflow_dispatch:
-
+    
 permissions:
   contents: read
   packages: write
@@ -17,6 +17,10 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-24.04
+    env:
+      GITHUB_TOKEN: ${{ secrets.GH_TOKEN_CAROLYN }}
+      GITHUB_ACTOR: ${{ github.actor }}
+
     steps:
     - name: Checkout
       uses: actions/checkout@v4
@@ -28,16 +32,77 @@ jobs:
         username: ${{ github.actor }}
         password: ${{ secrets.GH_TOKEN_CAROLYN }}
 
-    - name: Parse version info from tag
+    - name: Setup Java  
+      uses: actions/setup-java@v4
+      with:
+        distribution: temurin
+        java-version: "17"
+        cache: maven
+        server-id: github-packages
+        server-username: ${{ github.actor }}
+        server-password: ${{ secrets.GH_TOKEN_CAROLYN }}
+
+    - name: Force Maven to initialize settings
+      run: mvn -q -DforceStdout -Dexpression=project.version help:evaluate
+
+    - name: Debug generated Maven settings.xml
       run: |
-        VERSION=${GITHUB_REF:11}
-        MAJOR=$(echo "$VERSION" | cut -d . -f 1)
-        MINOR=$(echo "$VERSION" | cut -d . -f 2)
-        PATCH=$(echo "$VERSION" | cut -d . -f 3)
-        echo "version=$VERSION" >> $GITHUB_ENV
-        echo "version_major=$MAJOR" >> $GITHUB_ENV
-        echo "version_minor=$MINOR" >> $GITHUB_ENV
-        echo "version_patch=$PATCH" >> $GITHUB_ENV
+        echo "=== First 5 lines of ~/.m2/settings.xml ==="
+        sed -n '1,5p' ~/.m2/settings.xml || true
+        echo "=== First 20 bytes (hex) ==="
+        python - <<'PY'
+        import pathlib, binascii
+        p = pathlib.Path.home()/".m2"/"settings.xml"
+        data = p.read_bytes()[:20]
+        print(binascii.hexlify(data).decode())
+        print(data)
+        PY
+
+
+    # - name: Parse version info from lib-version
+    #   run: |
+    #     VERSION=${GITHUB_REF:11}
+    #     MAJOR=$(echo "$VERSION" | cut -d . -f 1)
+    #     MINOR=$(echo "$VERSION" | cut -d . -f 2)
+    #     PATCH=$(echo "$VERSION" | cut -d . -f 3)
+    #     echo "version=$VERSION" >> $GITHUB_ENV
+    #     echo "version_major=$MAJOR" >> $GITHUB_ENV
+    #     echo "version_minor=$MINOR" >> $GITHUB_ENV
+    #     echo "version_patch=$PATCH" >> $GITHUB_ENV
+
+    - name: Parse version info from pom.xml
+      run: |
+        VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+        echo "VERSION=$VERSION" >> $GITHUB_ENV
+
+        BASE_VERSION=${VERSION%%-*}
+        MAJOR=$(echo "$BASE_VERSION" | cut -d . -f 1)
+        MINOR=$(echo "$BASE_VERSION" | cut -d . -f 2)
+        PATCH=$(echo "$BASE_VERSION" | cut -d . -f 3)
+        echo "VERSION_BASE=$BASE_VERSION" >> $GITHUB_ENV
+        echo "VERSION_MAJOR=$MAJOR" >> $GITHUB_ENV
+        echo "VERSION_MINOR=$MINOR" >> $GITHUB_ENV
+        echo "VERSION_PATCH=$PATCH" >> $GITHUB_ENV
+
+    - name: Verfy versions match tag and pom.xml
+      if: startsWith(github.ref, 'refs/tags/')
+      run: |
+        if [ "v${VERSION}" != "${GITHUB_REF_NAME}" ]; then  
+          echo "ERROR: tag (${GITHUB_REF_NAME}) does not match version in pom.xml (v${VERSION})"
+          exit 1
+        fi
+
+    - name: Extract metadata
+      id: meta
+      uses: docker/metadata-action@v4
+      with:
+        images: ghcr.io/doda2025-team3/app
+        tags: |
+          type=raw,value=${{ env.VERSION }}
+          type=raw,value=${{ env.VERSION_MAJOR }}.${{ env.VERSION_MINOR }}.latest
+          type=raw,value=${{ env.VERSION_MAJOR }}.latest
+          type=raw,value=latest
+
 
     - name: Set up QEMU
       uses: docker/setup-qemu-action@v3
@@ -45,17 +110,46 @@ jobs:
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
 
+    - name: Prepare maven settings  
+      run: |
+        cat > maven-settings.xml <<XML
+        <settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 https://maven.apache.org/xsd/settings-1.0.0.xsd">
+          <servers>
+            <server>
+              <id>github-packages</id>
+              <username>${GITHUB_ACTOR}</username>
+              <password>${GITHUB_TOKEN}</password>
+            </server>
+          </servers>
+        </settings>
+        XML
+
+
     - name: Build and push image to registry
       uses: docker/build-push-action@v6
       with:
         platforms: linux/amd64,linux/arm64
         context: .
-        push: true
-        tags: |
-          ghcr.io/doda2025-team3/app:${{ env.version }}
-          ghcr.io/doda2025-team3/app:${{ env.version_major }}.${{ env.version_minor }}.latest
-          ghcr.io/doda2025-team3/app:${{ env.version_major }}.latest
-          ghcr.io/doda2025-team3/app:latest
+        push: ${{ github.event_name != 'pull_request' }}
+        provenance: false
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
+        secret-files: |
+          maven_settings=maven-settings.xml
+
+    # - name: Build and push image to registry
+    #   uses: docker/build-push-action@v6
+    #   with:
+    #     platforms: linux/amd64,linux/arm64
+    #     context: .
+    #     push: true
+    #     tags: |
+    #       ghcr.io/doda2025-team3/app:${{ env.version }}
+    #       ghcr.io/doda2025-team3/app:${{ env.version_major }}.${{ env.version_minor }}.latest
+    #       ghcr.io/doda2025-team3/app:${{ env.version_major }}.latest
+    #       ghcr.io/doda2025-team3/app:latest
 
    # - name: Build and push image to registry (this is from the in-class assignment)
    #   run: |

@@ -18,6 +18,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import com.doda2025group3.app.VersionUtil;
 import io.prometheus.client.Counter;
 import io.prometheus.client.Histogram;
+import io.prometheus.client.Gauge;
+import java.util.concurrent.atomic.AtomicLong;
 
 @Controller
 @RequestMapping(path = "/sms")
@@ -25,20 +27,28 @@ public class FrontendController {
 
     private static final Counter smsPageViews = Counter.build()
             .name("sms_page_views_total")
-            .help("Total number of times the SMS form page was loaded")
+            .help("Total number of times the SMS form page was loaded.")
             .labelNames("device_type")
             .register();
 
     private static final Counter smsPredictionsTotal = Counter.build()
             .name("sms_predictions_total")
-            .help("Total number of SMS predictions triggered via UI")
+            .help("Total number of SMS predictions triggered via UI.")
             .labelNames("result")
             .register();
 
     private static final Histogram smsPredictionLatencySeconds = Histogram.build()
             .name("sms_prediction_latency_seconds")
-            .help("Latency of SMS prediction calls from the frontend in seconds")
+            .help("Latency of SMS prediction calls from the frontend in seconds.")
             .buckets(0.05, 0.1, 0.25, 0.5, 1.0, 2.0, 5.0)
+            .register();
+
+    private static final AtomicLong totalPredictions = new AtomicLong(0);
+    private static final AtomicLong spamPredictions = new AtomicLong(0);
+
+    private static final Gauge smsPredictionsSpamRatio = Gauge.build()
+            .name("sms_predictions_spam_ratio")
+            .help("The current ratio of SMS spam predictions.")
             .register();
 
     private String modelHost;
@@ -50,7 +60,7 @@ public class FrontendController {
         this.modelHost = env.getProperty("MODEL_HOST");
         try {
           VersionUtil util = new VersionUtil();
-          System.out.println("Loaded" + util.getVersion());
+          System.out.println("Loaded version: " + util.getVersion());
         } catch (Exception e) {
           e.printStackTrace();
         }
@@ -102,6 +112,15 @@ public class FrontendController {
             smsPredictionsTotal.labels(resultLabel).inc();
 
             System.out.printf("Prediction: %s\n", sms.result);
+
+            totalPredictions.incrementAndGet();
+            if ("spam".equalsIgnoreCase(resultLabel)){
+                spamPredictions.incrementAndGet();
+            }
+
+            double ratio = (double) spamPredictions.get()/totalPredictions.get();
+            smsPredictionsSpamRatio.set(ratio);
+
             return sms;
         } finally {
             timer.observeDuration();
