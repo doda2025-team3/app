@@ -6,6 +6,7 @@ on:
     branches:
       - main
       - assignment1_excellent_attempt
+      - green-button
     paths: 
       - "pom.xml"
   workflow_dispatch:
