@@ -27,17 +27,17 @@ public class FrontendController {
 
     private final String appVersion;
 
+    private static final Counter clickCounter = Counter.build()
+        .name("sms_button_clicks_total")
+        .help("Total clicks on the submit button")
+        .labelNames("version") 
+        .register();
+
     private static final Counter smsPageViews = Counter.build()
         .name("sms_page_views_total")
         .help("Total number of times the SMS form page was loaded.")
         .labelNames("device_type", "version")
         .register();
-
-    private static final Counter smsPageViews = Counter.build()
-            .name("sms_page_views_total")
-            .help("Total number of times the SMS form page was loaded.")
-            .labelNames("device_type")
-            .register();
 
     private static final Counter smsPredictionsTotal = Counter.build()
             .name("sms_predictions_total")
@@ -80,7 +80,7 @@ public class FrontendController {
     @PostMapping("/track-click")
     @ResponseBody
     public void trackClick() {
-        smsPageViews.labels(deviceType, appVersion).inc();
+        clickCounter.labels(appVersion).inc();
     }
 
     private void assertModelHost() {
@@ -110,7 +110,7 @@ public class FrontendController {
 
         String ua = request.getHeader("User-Agent");
         String deviceType = classifyDeviceType(ua);
-        smsPageViews.labels(deviceType).inc();
+        smsPageViews.labels(deviceType, appVersion).inc();
 
         return "sms/index";
     }
