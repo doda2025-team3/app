@@ -7,6 +7,7 @@ on:
       - main
       - assignment1_excellent_attempt
       - green-button
+      - button-click
     paths: 
       - "pom.xml"
   workflow_dispatch:
