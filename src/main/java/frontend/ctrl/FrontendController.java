@@ -25,6 +25,14 @@ import java.util.concurrent.atomic.AtomicLong;
 @RequestMapping(path = "/sms")
 public class FrontendController {
 
+    private final String appVersion;
+
+    private static final Counter smsPageViews = Counter.build()
+        .name("sms_page_views_total")
+        .help("Total number of times the SMS form page was loaded.")
+        .labelNames("device_type", "version")
+        .register();
+
     private static final Counter smsPageViews = Counter.build()
             .name("sms_page_views_total")
             .help("Total number of times the SMS form page was loaded.")
@@ -58,6 +66,8 @@ public class FrontendController {
     public FrontendController(RestTemplateBuilder rest, Environment env) {
         this.rest = rest;
         this.modelHost = env.getProperty("MODEL_HOST");
+        
+        this.appVersion = env.getProperty("APP_VERSION", "default");
         try {
           VersionUtil util = new VersionUtil();
           System.out.println("Loaded version: " + util.getVersion());
@@ -65,6 +75,12 @@ public class FrontendController {
           e.printStackTrace();
         }
         assertModelHost();
+    }
+
+    @PostMapping("/track-click")
+    @ResponseBody
+    public void trackClick() {
+        smsPageViews.labels(deviceType, appVersion).inc();
     }
 
     private void assertModelHost() {

@@ -16,6 +16,12 @@ $(document).ready(function() {
 	}
 
 	$("button").click(function (e) {
+		$.ajax({
+			type: "POST",
+			url: "./track-click",
+			contentType: "application/json"
+		});
+
 		e.stopPropagation()
 		e.preventDefault()
 
